@@ -1,7 +1,7 @@
 # Magento 2 Buhmann StockStatus
 <img src="https://img.shields.io/badge/magento-v2.4.6-green?style=plastic&logo=magento">
 
-##Main Functionalities
+## Main Functionalities
 Enabels filtering by stock status (simple  and configurable)
 
 Added additional stock_status_filter attribute. The attribute is updated by cron, also added the ability to force the update using the command: `bin/magento buhmann:init:stockStatus`
