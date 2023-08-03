@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="cataloginventory">
+            <group id="filtering_stock_status" translate="label tooltip comment" type="text" sortOrder="9999" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Filtering Stock Status Cronjob Configuration</label>
+                <field id="is_enabled" translate="label" type="select" sortOrder="10" showInDefault="1" canRestore="1">
+                    <label>Enable Stock Status Cronjob</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="cronjob" translate="label tooltip comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Cronjob for updating Stock Status for all products</label>
+                    <comment>Set time for cronjob (for example: * * * * *)</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
