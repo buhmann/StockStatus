@@ -19,5 +19,6 @@ Please create a "Buhmann" folder in Your Magento modules directory (app) and cop
   bin/magento setup:di:compile
   bin/magento setup:static-content:deploy -f
   bin/magento indexer:reindex
+  bin/magento buhmann:init:stockStatus
   bin/magento c:f
   ```
