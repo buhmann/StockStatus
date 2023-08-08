@@ -69,7 +69,7 @@ class FilterStockStatus
     ) {
         $_field = $this->sanitizeAttrCode($field);
         $_conditions = $this->sanitizeAttrConditions($_field, $condition);
-        if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && $_conditions[0] == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
+        if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && reset($_conditions) == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
             $filteredProductIds = [];
             foreach ($subject as $product) {
                 if (!$this->helperData->getStockStatus($product)) {
@@ -177,6 +177,6 @@ class FilterStockStatus
             }
             return $_conditions;
         }
-        return $conditions;
+        return $conditions = is_array($conditions) ? $conditions : explode(',', $conditions);
     }
 }
