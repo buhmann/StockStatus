@@ -7,6 +7,7 @@ namespace Buhmann\StockStatus\Console\Command;
 
 use Buhmann\StockStatus\Helper\Data as StockHelper;
 use Magento\Framework\App\State as AppState;
+use Magento\Framework\Console\Cli;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -61,8 +62,10 @@ class StockStatus extends Command
             $this->_appState->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
             $output->writeln("<info>" . __('Start updateStockStatusFilterAttribute ') . "</info>");
             $this->_stockHelper->updateStockStatusFilterAttribute();
+            return Cli::RETURN_SUCCESS;
         } catch (\Exception $e) {
             $output->writeln('<error>' . $e->getMessage() . '</error>');
         }
+        return Cli::RETURN_FAILURE;
     }
 }
