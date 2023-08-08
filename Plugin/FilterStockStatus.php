@@ -6,35 +6,47 @@
 namespace Buhmann\StockStatus\Plugin;
 
 use Buhmann\StockStatus\Helper\Data;
+use Buhmann\StockStatus\Model\Config\Source\Options as StockStatusOptions;
 use Magento\Framework\App\RequestInterface;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Smile\ElasticsuiteCore\Helper\Mapping;
 
 class FilterStockStatus
 {
+    private $helperData;
     /**
      * @var RequestInterface
      */
-    protected $_request;
+    private $_request;
 
     /**
      * @var Configurable
      */
-    protected $configurableType;
+    private $configurableType;
 
     /**
      * @var StockRegistryInterface
      */
-    protected $stockRegistry;
+    private $stockRegistry;
 
-
+    /**
+     * FilterStockStatus constructor.
+     *
+     * @param Data $helperData
+     * @param RequestInterface $request
+     * @param Configurable $configurableType
+     * @param StockRegistryInterface $stockRegistry
+     */
     public function __construct(
+        Data $helperData,
         RequestInterface $request,
         Configurable $configurableType,
         StockRegistryInterface $stockRegistry
     ) {
+        $this->helperData = $helperData;
         $this->_request = $request;
         $this->configurableType = $configurableType;
         $this->stockRegistry = $stockRegistry;
@@ -47,6 +59,7 @@ class FilterStockStatus
      * @param null $condition
      *
      * @return Collection
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function aroundAddFieldToFilter(
         Collection $subject,
@@ -54,15 +67,17 @@ class FilterStockStatus
         $field,
         $condition = null
     ) {
-        if ($field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && $condition == '1') {
+        $_field = $this->sanitizeAttrCode($field);
+        $_conditions = $this->sanitizeAttrConditions($_field, $condition);
+        if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && $_conditions[0] == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
             $filteredProductIds = [];
             foreach ($subject as $product) {
-                if (!$this->getStockStatus($product)) {
+                if (!$this->helperData->getStockStatus($product)) {
                     $filteredProductIds[] = $product->getId();
                     $subject->removeItemByKey($product->getId());
                 } else if($product->getTypeId() == Configurable::TYPE_CODE) {
                     $childProduct = $this->getFinalSimpleProduct($product);
-                    if ($childProduct && !$this->getStockStatus($childProduct)) {
+                    if ($childProduct && !$this->helperData->getStockStatus($childProduct)) {
                         $filteredProductIds[] = $product->getId();
                         $subject->removeItemByKey($product->getId());
                     }
@@ -86,29 +101,17 @@ class FilterStockStatus
      *
      * @return array
      */
-    protected function getFilterData(Product $product)
+    private function getFilterData(Product $product)
     {
         $filterValues = [];
         $filterData = $this->_request->getParams();
         foreach ($this->configurableType->getUsedProductAttributes($product) as $attribute) {
             $code = $attribute->getData('attribute_code');
             if (isset($filterData[$code])) {
-                $filterValues[$code] = $filterData[$code];
+                $filterValues[$code] = $this->sanitizeAttrConditions($code, $filterData[$code]);
             }
         }
         return $filterValues;
-    }
-
-    /**
-     * Get stock status of product
-     *
-     * @param Product $product
-     * @return bool
-     */
-    protected function getStockStatus(Product $product)
-    {
-        $stockItem = $this->stockRegistry->getStockItem($product->getId());
-        return $product->isSaleable() && $stockItem->getIsInStock();
     }
 
     /**
@@ -118,17 +121,20 @@ class FilterStockStatus
      *
      * @return Product|null
      */
-    protected function getFinalSimpleProduct(Product $configurableProduct)
+    private function getFinalSimpleProduct(Product $configurableProduct)
     {
         $filterData = $this->getFilterData($configurableProduct);
         $childProducts = $configurableProduct->getTypeInstance()->getUsedProducts($configurableProduct);
+
         /** @var Product $childProduct */
         foreach ($childProducts as $childProduct) {
             $match = true;
-            foreach ($filterData as $attributeCode => $value) {
-                if ($childProduct->getData($attributeCode) != $value) {
-                    $match = false;
-                    break;
+            foreach ($filterData as $attributeCode => $values) {
+                foreach ($values as $value) {
+                    if ($childProduct->getData($attributeCode) != $value) {
+                        $match = false;
+                        break;
+                    }
                 }
             }
 
@@ -137,5 +143,40 @@ class FilterStockStatus
             }
         }
         return null;
+    }
+
+    /**
+     * @param string $code
+     *
+     * @return string
+     */
+    private function sanitizeAttrCode($code = '')
+    {
+        if ($code && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
+            $prefix = Mapping::OPTION_TEXT_PREFIX . '_';
+            return str_replace($prefix, '', $code);
+        }
+        return $code;
+    }
+
+    /**
+     * @param string $attrCode
+     * @param string|array $conditions
+     *
+     * @return array|string
+     */
+    private function sanitizeAttrConditions($attrCode, $conditions)
+    {
+        if ($conditions && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
+            if (!is_array($conditions)) {
+                $conditions = explode(',', $conditions);
+            }
+            $_conditions = [];
+            foreach ($conditions as $condition) {
+                $_conditions[] = $this->helperData->getAttrOptIdByLabel($attrCode, $condition);
+            }
+            return $_conditions;
+        }
+        return $conditions;
     }
 }

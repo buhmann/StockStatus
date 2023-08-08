@@ -6,13 +6,15 @@
 
 namespace Buhmann\StockStatus\Helper;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\Helper\Context;
-
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Product\Action;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\State;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\Module\Manager as ModuleManager;
 
 class Data extends AbstractHelper
 {
@@ -39,6 +41,16 @@ class Data extends AbstractHelper
     protected $stockRegistry;
 
     /**
+     * @var ProductFactory
+     */
+    protected $productFactory;
+
+    /**
+     * @var ModuleManager
+     */
+    protected $moduleManager;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -46,24 +58,29 @@ class Data extends AbstractHelper
      * @param Action $productAction
      * @param State $state
      * @param StockRegistryInterface $stockRegistry
+     * @param ProductFactory $productFactory
+     * @param ModuleManager $moduleManager
      */
     public function __construct(
         Context $context,
         CollectionFactory $productCollectionFactory,
         Action $productAction,
         State $state,
-        StockRegistryInterface $stockRegistry
+        StockRegistryInterface $stockRegistry,
+        ProductFactory $productFactory,
+        ModuleManager $moduleManager
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->productAction = $productAction;
         $this->state = $state;
         $this->stockRegistry = $stockRegistry;
+        $this->productFactory = $productFactory;
+        $this->moduleManager = $moduleManager;
         parent::__construct($context);
     }
 
     /**
      * Update Stock Status Filter Attribute
-     * @return $this
      */
     public function updateStockStatusFilterAttribute()
     {
@@ -80,13 +97,9 @@ class Data extends AbstractHelper
 
             foreach ($productCollection as $product) {
                 if ($product->getResource()->getAttribute(self::STOCK_STATUS_FILTER_ATTRIBUTE)) {
-                    $stockItem = $this->stockRegistry->getStockItem($product->getId(), $product->getStore()->getWebsiteId());
-                    $isInStock = $stockItem->getIsInStock();
-                    $stockStatusFilter = $product->getData(self::STOCK_STATUS_FILTER_ATTRIBUTE);
-
-                    if ($isInStock && $stockStatusFilter != 1) {
+                    if ($this->getStockStatus($product)) {
                         $inStockProductIds[] = $product->getId();
-                    } elseif (!$isInStock && $stockStatusFilter != 0) {
+                    } else {
                         $outOfStockProductIds[] = $product->getId();
                     }
                 }
@@ -101,7 +114,48 @@ class Data extends AbstractHelper
         } catch (\Exception $e) {
             $this->_logger->error('Buhmann_StockStatus: ' . $e->getMessage());
         }
+    }
 
-        return $this;
+    /**
+     * Get stock status of product
+     *
+     * @param Product $product
+     * @return bool
+     */
+    public function getStockStatus(Product $product)
+    {
+        $stockItem = $this->stockRegistry->getStockItem($product->getId());
+        return $product->isSaleable() && $stockItem->getIsInStock();
+    }
+
+    /**
+     * Get attribute option
+     *
+     * @param $attrCode
+     * @param $optLabel
+     *
+     * @return string
+     */
+    public function getAttrOptIdByLabel($attrCode, $optLabel)
+    {
+        $product = $this->productFactory->create();
+        $isAttrExist = $product->getResource()->getAttribute($attrCode);
+        $optId = '';
+        if ($isAttrExist && $isAttrExist->usesSource()) {
+            $optId = $isAttrExist->getSource()->getOptionId($optLabel);
+        }
+        return $optId;
+    }
+
+    /**
+     * Check if the module is enabled
+     *
+     * @param string $moduleName
+     *
+     * @return bool
+     */
+    public function isModuleEnabled($moduleName)
+    {
+        return $this->moduleManager->isEnabled($moduleName);
     }
 }

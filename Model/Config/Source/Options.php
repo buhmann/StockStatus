@@ -9,6 +9,9 @@ use Magento\Eav\Model\Entity\Attribute\Source\AbstractSource;
 
 class Options extends AbstractSource
 {
+    const IS_IN_STOCK_ATTRIBUTE_VALUE = 1;
+    const OUT_OF_STOCK_ATTRIBUTE_VALUE = '';
+
     /**
      * Get Filtering Stock Status options
      *
@@ -17,8 +20,8 @@ class Options extends AbstractSource
     public function getAllOptions()
     {
         $this->_options = [
-            ['label' => __('Out of Stock'), 'value'=> ''],
-            ['label' => __('In Stock'), 'value'=> 1]
+            ['label' => __('Out of Stock'), 'value'=> self::OUT_OF_STOCK_ATTRIBUTE_VALUE],
+            ['label' => __('In Stock'), 'value'=> self::IS_IN_STOCK_ATTRIBUTE_VALUE]
         ];
         return $this->_options;
     }
