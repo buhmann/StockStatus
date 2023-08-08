@@ -62,7 +62,7 @@ class FilterStockStatus
                     $subject->removeItemByKey($product->getId());
                 } else if($product->getTypeId() == Configurable::TYPE_CODE) {
                     $childProduct = $this->getFinalSimpleProduct($product);
-                    if ($childProduct && !$childProduct->isSaleable()) {
+                    if ($childProduct && !$this->getStockStatus($childProduct)) {
                         $filteredProductIds[] = $product->getId();
                         $subject->removeItemByKey($product->getId());
                     }
