@@ -71,7 +71,8 @@ class FilterStockStatus
         $_conditions = $this->sanitizeAttrConditions($_field, $condition);
         if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && reset($_conditions) == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
             $filteredProductIds = [];
-            foreach ($subject as $product) {
+            $_subject = clone $subject;
+            foreach ($_subject as $product) {
                 if (!$this->helperData->getStockStatus($product)) {
                     $filteredProductIds[] = $product->getId();
                     $subject->removeItemByKey($product->getId());
@@ -85,7 +86,7 @@ class FilterStockStatus
             }
 
             if (!empty($filteredProductIds)) {
-                $subject->addAttributeToFilter('entity_id', ['nin' => $filteredProductIds]);
+                $subject->addFieldToFilter('entity_id', ['nin' => $filteredProductIds]);
             }
 
             return $subject;
@@ -163,16 +164,18 @@ class FilterStockStatus
      * @param string $attrCode
      * @param string|array $conditions
      *
-     * @return array|string
+     * @return array
      */
     private function sanitizeAttrConditions($attrCode, $conditions)
     {
-        if (!is_array($conditions)) {
-            $conditions = explode(',', $conditions);
-        }
         $_conditions = [];
-        foreach ($conditions as $condition) {
-            $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+        if (is_string($conditions) || is_array($conditions)) {
+            if (is_string($conditions)) {
+                $conditions = explode(',', $conditions);
+            }
+            foreach ($conditions as $condition) {
+                $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+            }
         }
         return $_conditions;
     }
