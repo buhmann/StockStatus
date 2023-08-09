@@ -174,7 +174,9 @@ class FilterStockStatus
                 $conditions = explode(',', $conditions);
             }
             foreach ($conditions as $condition) {
-                $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+                if ($condition) {
+                    $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+                }
             }
         }
         return $_conditions;
