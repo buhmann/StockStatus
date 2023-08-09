@@ -67,6 +67,9 @@ class FilterStockStatus
         $field,
         $condition = null
     ) {
+        if ($this->helperData->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML) {
+            return $proceed($field, $condition);
+        }
         $_field = $this->sanitizeAttrCode($field);
         $_conditions = $this->sanitizeAttrConditions($_field, $condition);
         if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && reset($_conditions) == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {

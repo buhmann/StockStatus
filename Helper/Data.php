@@ -117,6 +117,16 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getAreaCode()
+    {
+        return $this->state->getAreaCode();
+    }
+
+
+    /**
      * Get stock status of product
      *
      * @param Product $product
