@@ -13,7 +13,4 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\Catalog\Model\ResourceModel\Product\Collection">
-        <plugin name="buhmann_stockstatus_filter" type="Buhmann\StockStatus\Plugin\FilterStockStatus" sortOrder="10"/>
-    </type>
 </config>

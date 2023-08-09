@@ -67,7 +67,7 @@ class FilterStockStatus
         $field,
         $condition = null
     ) {
-        if ($this->helperData->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML) {
+        if (!$this->helperData->isStockFilterEnabled() || !$condition || $this->helperData->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML) {
             return $proceed($field, $condition);
         }
         $_field = $this->sanitizeAttrCode($field);
