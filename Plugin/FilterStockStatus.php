@@ -12,7 +12,6 @@ use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Smile\ElasticsuiteCore\Helper\Mapping;
 
 class FilterStockStatus
 {
@@ -157,7 +156,7 @@ class FilterStockStatus
     private function sanitizeAttrCode($code = '')
     {
         if ($code && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
-            $prefix = Mapping::OPTION_TEXT_PREFIX . '_';
+            $prefix = \Smile\ElasticsuiteCore\Helper\Mapping::OPTION_TEXT_PREFIX . '_';
             return str_replace($prefix, '', $code);
         }
         return $code;
