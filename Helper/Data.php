@@ -19,6 +19,7 @@ use Magento\Framework\Module\Manager as ModuleManager;
 class Data extends AbstractHelper
 {
     const STOCK_STATUS_FILTER_ATTRIBUTE = 'stock_status_filter';
+    const CONFIG_ENABLED_XML_PATH = 'cataloginventory/filtering_stock_status/is_enabled';
 
     /**
      * @var CollectionFactory
@@ -80,6 +81,22 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @return bool
+     */
+    public function isStockFilterEnabled()
+    {
+        $outOfStockEnabled = $this->scopeConfig->isSetFlag(
+            \Magento\CatalogInventory\Model\Configuration::XML_PATH_DISPLAY_PRODUCT_STOCK_STATUS,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        $extensionEnabled = $this->scopeConfig->isSetFlag(
+            self::CONFIG_ENABLED_XML_PATH,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        return $outOfStockEnabled && $extensionEnabled;
+    }
+
+    /**
      * Update Stock Status Filter Attribute
      */
     public function updateStockStatusFilterAttribute()
@@ -114,6 +131,15 @@ class Data extends AbstractHelper
         } catch (\Exception $e) {
             $this->_logger->error('Buhmann_StockStatus: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getAreaCode()
+    {
+        return $this->state->getAreaCode();
     }
 
     /**

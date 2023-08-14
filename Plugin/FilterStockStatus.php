@@ -12,7 +12,6 @@ use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Smile\ElasticsuiteCore\Helper\Mapping;
 
 class FilterStockStatus
 {
@@ -67,11 +66,15 @@ class FilterStockStatus
         $field,
         $condition = null
     ) {
+        if (!$this->helperData->isStockFilterEnabled() || !$condition || $this->helperData->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML) {
+            return $proceed($field, $condition);
+        }
         $_field = $this->sanitizeAttrCode($field);
         $_conditions = $this->sanitizeAttrConditions($_field, $condition);
         if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && reset($_conditions) == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
             $filteredProductIds = [];
-            foreach ($subject as $product) {
+            $_subject = clone $subject;
+            foreach ($_subject as $product) {
                 if (!$this->helperData->getStockStatus($product)) {
                     $filteredProductIds[] = $product->getId();
                     $subject->removeItemByKey($product->getId());
@@ -85,7 +88,7 @@ class FilterStockStatus
             }
 
             if (!empty($filteredProductIds)) {
-                $subject->addAttributeToFilter('entity_id', ['nin' => $filteredProductIds]);
+                $subject->addFieldToFilter('entity_id', ['nin' => $filteredProductIds]);
             }
 
             return $subject;
@@ -153,7 +156,7 @@ class FilterStockStatus
     private function sanitizeAttrCode($code = '')
     {
         if ($code && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
-            $prefix = Mapping::OPTION_TEXT_PREFIX . '_';
+            $prefix = \Smile\ElasticsuiteCore\Helper\Mapping::OPTION_TEXT_PREFIX . '_';
             return str_replace($prefix, '', $code);
         }
         return $code;
@@ -163,16 +166,20 @@ class FilterStockStatus
      * @param string $attrCode
      * @param string|array $conditions
      *
-     * @return array|string
+     * @return array
      */
     private function sanitizeAttrConditions($attrCode, $conditions)
     {
-        if (!is_array($conditions)) {
-            $conditions = explode(',', $conditions);
-        }
         $_conditions = [];
-        foreach ($conditions as $condition) {
-            $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+        if (is_string($conditions) || is_array($conditions)) {
+            if (is_string($conditions)) {
+                $conditions = explode(',', $conditions);
+            }
+            foreach ($conditions as $condition) {
+                if ($condition) {
+                    $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+                }
+            }
         }
         return $_conditions;
     }
