@@ -167,16 +167,13 @@ class FilterStockStatus
      */
     private function sanitizeAttrConditions($attrCode, $conditions)
     {
-        if ($conditions && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
-            if (!is_array($conditions)) {
-                $conditions = explode(',', $conditions);
-            }
-            $_conditions = [];
-            foreach ($conditions as $condition) {
-                $_conditions[] = $this->helperData->getAttrOptIdByLabel($attrCode, $condition);
-            }
-            return $_conditions;
+        if (!is_array($conditions)) {
+            $conditions = explode(',', $conditions);
         }
-        return $conditions = is_array($conditions) ? $conditions : explode(',', $conditions);
+        $_conditions = [];
+        foreach ($conditions as $condition) {
+            $_conditions[] = (int)$condition !== $condition ? $this->helperData->getAttrOptIdByLabel($attrCode, $condition) : $condition;
+        }
+        return $_conditions;
     }
 }
