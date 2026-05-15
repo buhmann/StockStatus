@@ -23,12 +23,12 @@ class InstallProductAttributes implements DataPatchInterface, PatchVersionInterf
     /**
      * @var ModuleDataSetupInterface
      */
-    private $moduleDataSetup;
+    private ModuleDataSetupInterface $moduleDataSetup;
 
     /**
      * @var EavSetupFactory
      */
-    private $eavSetupFactory;
+    private EavSetupFactory $eavSetupFactory;
 
     /**
      * InstallInitialConfigurableAttributes constructor.

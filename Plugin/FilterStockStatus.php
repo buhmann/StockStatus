@@ -15,16 +15,19 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 
 class FilterStockStatus
 {
-    private $helperData;
+    /**
+     * @var Data
+     */
+    private Data $helperData;
     /**
      * @var RequestInterface
      */
-    private $_request;
+    private RequestInterface $_request;
 
     /**
      * @var Configurable
      */
-    private $configurableType;
+    private Configurable $configurableType;
 
     /**
      * @var StockRegistryInterface
@@ -153,7 +156,7 @@ class FilterStockStatus
      *
      * @return string
      */
-    private function sanitizeAttrCode($code = '')
+    private function sanitizeAttrCode(string $code = '')
     {
         if ($code && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
             $prefix = \Smile\ElasticsuiteCore\Helper\Mapping::OPTION_TEXT_PREFIX . '_';

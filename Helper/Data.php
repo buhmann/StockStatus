@@ -6,6 +6,7 @@
 
 namespace Buhmann\StockStatus\Helper;
 
+use Exception;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
@@ -24,32 +25,32 @@ class Data extends AbstractHelper
     /**
      * @var CollectionFactory
      */
-    protected $productCollectionFactory;
+    protected CollectionFactory $productCollectionFactory;
 
     /**
      * @var Action
      */
-    protected $productAction;
+    protected Action $productAction;
 
     /**
      * @var State
      */
-    protected $state;
+    protected State $state;
 
     /**
      * @var StockRegistryInterface
      */
-    protected $stockRegistry;
+    protected StockRegistryInterface $stockRegistry;
 
     /**
      * @var ProductFactory
      */
-    protected $productFactory;
+    protected ProductFactory $productFactory;
 
     /**
      * @var ModuleManager
      */
-    protected $moduleManager;
+    protected ModuleManager $moduleManager;
 
     /**
      * Data constructor.
@@ -128,7 +129,7 @@ class Data extends AbstractHelper
             if (!empty($outOfStockProductIds)) {
                 $this->productAction->updateAttributes($outOfStockProductIds, [self::STOCK_STATUS_FILTER_ATTRIBUTE => ''], 0);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_logger->error('Buhmann_StockStatus: ' . $e->getMessage());
         }
     }

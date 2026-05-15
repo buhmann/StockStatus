@@ -12,7 +12,10 @@ With active filter `stock_status_filter=1`:
  - For configurable products, if a simple product is defined (based on active filters) and that product is out of stock, then the parent configurable product is hidden.
 
 ## Installation guide
-Please create a "Buhmann" folder in Your Magento modules directory (app) and copy the "CmsContent" folder into "Buhmann" folder
+This module is available on [Github](https://github.com/buhmann/StockStatus).
+```sh
+composer require buhmann/module-stock-status
+```
 
  ```
   bin/magento setup:upgrade
