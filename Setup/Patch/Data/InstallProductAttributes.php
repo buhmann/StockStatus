@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace Buhmann\StockStatus\Setup\Patch\Data;
 
-use Buhmann\StockStatus\Helper\Data as HelperData;
+use Buhmann\StockStatus\Api\Data\StockStatusInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -51,7 +51,7 @@ class InstallProductAttributes implements DataPatchInterface, PatchVersionInterf
         /** @var EavSetup $eavSetup */
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
         $productAttributesData = [
-            HelperData::STOCK_STATUS_FILTER_ATTRIBUTE => [
+            StockStatusInterface::STOCK_STATUS_FILTER_ATTRIBUTE => [
                 'type' => 'int',
                 'label' => 'Filtering Stock Status',
                 'input' => 'select',

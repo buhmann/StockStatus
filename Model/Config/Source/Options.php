@@ -17,7 +17,7 @@ class Options extends AbstractSource
      *
      * @return array
      */
-    public function getAllOptions()
+    public function getAllOptions(): array
     {
         $this->_options = [
             ['label' => __('Out of Stock'), 'value'=> self::OUT_OF_STOCK_ATTRIBUTE_VALUE],
