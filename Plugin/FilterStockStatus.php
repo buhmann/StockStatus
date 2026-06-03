@@ -5,13 +5,16 @@
  */
 namespace Buhmann\StockStatus\Plugin;
 
+use Buhmann\StockStatus\Api\Data\StockStatusInterface;
 use Buhmann\StockStatus\Helper\Data;
+use Buhmann\StockStatus\ViewModel\ConfigProvider;
 use Buhmann\StockStatus\Model\Config\Source\Options as StockStatusOptions;
 use Magento\Framework\App\RequestInterface;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\App\State as AppState;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\Exception\LocalizedException;
 
 class FilterStockStatus
 {
@@ -19,6 +22,7 @@ class FilterStockStatus
      * @var Data
      */
     private Data $helperData;
+
     /**
      * @var RequestInterface
      */
@@ -30,9 +34,14 @@ class FilterStockStatus
     private Configurable $configurableType;
 
     /**
-     * @var StockRegistryInterface
+     * @var ConfigProvider
      */
-    private $stockRegistry;
+    private ConfigProvider $configProvider;
+
+    /**
+     * @var AppState
+     */
+    private AppState $appState;
 
     /**
      * FilterStockStatus constructor.
@@ -40,18 +49,21 @@ class FilterStockStatus
      * @param Data $helperData
      * @param RequestInterface $request
      * @param Configurable $configurableType
-     * @param StockRegistryInterface $stockRegistry
+     * @param ConfigProvider $configProvider
+     * @param AppState $appState
      */
     public function __construct(
         Data $helperData,
         RequestInterface $request,
         Configurable $configurableType,
-        StockRegistryInterface $stockRegistry
+        ConfigProvider $configProvider,
+        AppState $appState
     ) {
         $this->helperData = $helperData;
         $this->_request = $request;
         $this->configurableType = $configurableType;
-        $this->stockRegistry = $stockRegistry;
+        $this->configProvider = $configProvider;
+        $this->appState = $appState;
     }
 
     /**
@@ -61,20 +73,29 @@ class FilterStockStatus
      * @param null $condition
      *
      * @return Collection
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function aroundAddFieldToFilter(
         Collection $subject,
         \Closure $proceed,
-        $field,
-        $condition = null
+                   $field,
+                   $condition = null
     ) {
-        if (!$this->helperData->isStockFilterEnabled() || !$condition || $this->helperData->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML) {
+        if (!$this->configProvider->isStockFilterEnabled()
+            || !$condition
+            || $this->appState->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML
+        ) {
             return $proceed($field, $condition);
         }
+
+        if (is_object($condition)) {
+            return $proceed($field, $condition);
+        }
+
         $_field = $this->sanitizeAttrCode($field);
         $_conditions = $this->sanitizeAttrConditions($_field, $condition);
-        if ($_field == Data::STOCK_STATUS_FILTER_ATTRIBUTE && reset($_conditions) == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
+
+        if ($_field == StockStatusInterface::STOCK_STATUS_FILTER_ATTRIBUTE && reset($_conditions) == StockStatusOptions::IS_IN_STOCK_ATTRIBUTE_VALUE) {
             $filteredProductIds = [];
             $_subject = clone $subject;
             foreach ($_subject as $product) {
@@ -107,7 +128,7 @@ class FilterStockStatus
      *
      * @return array
      */
-    private function getFilterData(Product $product)
+    private function getFilterData(Product $product): array
     {
         $filterValues = [];
         $filterData = $this->_request->getParams();
@@ -127,7 +148,7 @@ class FilterStockStatus
      *
      * @return Product|null
      */
-    private function getFinalSimpleProduct(Product $configurableProduct)
+    private function getFinalSimpleProduct(Product $configurableProduct): ?Product
     {
         $filterData = $this->getFilterData($configurableProduct);
         $childProducts = $configurableProduct->getTypeInstance()->getUsedProducts($configurableProduct);
@@ -156,7 +177,7 @@ class FilterStockStatus
      *
      * @return string
      */
-    private function sanitizeAttrCode(string $code = '')
+    private function sanitizeAttrCode(string $code = ''): string
     {
         if ($code && $this->helperData->isModuleEnabled('Smile_ElasticsuiteCore')) {
             $prefix = \Smile\ElasticsuiteCore\Helper\Mapping::OPTION_TEXT_PREFIX . '_';
@@ -167,11 +188,11 @@ class FilterStockStatus
 
     /**
      * @param string $attrCode
-     * @param string|array $conditions
+     * @param mixed $conditions
      *
      * @return array
      */
-    private function sanitizeAttrConditions($attrCode, $conditions)
+    private function sanitizeAttrConditions(string $attrCode, mixed $conditions = null): array
     {
         $_conditions = [];
         if (is_string($conditions) || is_array($conditions)) {

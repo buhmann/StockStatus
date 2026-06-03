@@ -5,59 +5,76 @@
  */
 namespace Buhmann\StockStatus\Cron;
 
-use Buhmann\StockStatus\Helper\Data as StockHelper;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\ResourceConnection;
+use Buhmann\StockStatus\Model\Service\UpdateStockStatusAttribute as UpdateService;
+use Buhmann\StockStatus\ViewModel\ConfigProvider;
+use Exception;
+use Magento\Framework\App\State as AppState;
+use Magento\Framework\Exception\LocalizedException;
 use Psr\Log\LoggerInterface;
 
 class UpdateStockStatusAttribute
 {
     /**
-     * @var ScopeConfigInterface
-     */
-    protected $scopeConfig;
-
-    /**
-     * @var ResourceConnection
-     */
-    protected $resourceConnection;
-
-    /**
      * @var LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
-     * @var StockHelper
+     * @var ConfigProvider
      */
-    protected $_stockHelper;
+    protected ConfigProvider $configProvider;
+
+    /**
+     * @var UpdateService
+     */
+    protected UpdateService $updateService;
+
+    /**
+     * @var AppState
+     */
+    protected AppState $appState;
 
     /**
      * UpdateStockStatusAttribute constructor.
-     * @param ScopeConfigInterface $scopeConfig
-     * @param ResourceConnection $resourceConnection
+     *
      * @param LoggerInterface $logger
-     * @param StockHelper $stockHelper
+     * @param ConfigProvider $configProvider
+     * @param UpdateService $updateService
+     * @param AppState $appState
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
-        ResourceConnection $resourceConnection,
         LoggerInterface $logger,
-        StockHelper $stockHelper
+        ConfigProvider $configProvider,
+        UpdateService $updateService,
+        AppState $appState
     ) {
-        $this->scopeConfig = $scopeConfig;
-        $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
-        $this->_stockHelper = $stockHelper;
+        $this->configProvider = $configProvider;
+        $this->updateService = $updateService;
+        $this->appState = $appState;
     }
 
     /**
      * Executes Cronjob for updating stock_status_filter attribute
+     *
+     * @return $this
      */
-    public function execute()
+    public function execute(): static
     {
-        if ($this->scopeConfig->getValue('cataloginventory/filtering_stock_status/is_enabled')) {
-            $this->_stockHelper->updateStockStatusFilterAttribute();
+        if ($this->configProvider->isStockFilterEnabled()) {
+            try {
+                try {
+                    if (!$this->appState->getAreaCode()) {
+                        $this->appState->setAreaCode(\Magento\Framework\App\Area::AREA_ADMINHTML);
+                    }
+                } catch (LocalizedException) {
+
+                }
+
+                $this->updateService->execute();
+            } catch (Exception $e) {
+                $this->logger->error('Buhmann_StockStatus Cron Exception: ' . $e->getMessage());
+            }
         }
         return $this;
     }

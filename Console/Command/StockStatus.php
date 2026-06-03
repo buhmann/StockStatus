@@ -5,9 +5,11 @@
  */
 namespace Buhmann\StockStatus\Console\Command;
 
-use Buhmann\StockStatus\Helper\Data as StockHelper;
+use Buhmann\StockStatus\Model\Service\UpdateStockStatusAttribute as UpdateService;
+use Exception;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Exception\LocalizedException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,23 +19,23 @@ class StockStatus extends Command
     /**
      * @var AppState
      */
-    protected $_appState;
+    protected AppState $_appState;
 
     /**
-     * @var StockHelper
+     * @var UpdateService
      */
-    protected $_stockHelper;
+    protected UpdateService $updateService;
 
     /**
      * @param AppState $appState
-     * @param StockHelper $stockHelper
+     * @param UpdateService $updateService
      */
     public function __construct(
         AppState $appState,
-        StockHelper $stockHelper
+        UpdateService $updateService
     ) {
         $this->_appState = $appState;
-        $this->_stockHelper = $stockHelper;
+        $this->updateService = $updateService;
         parent::__construct();
     }
 
@@ -53,17 +55,24 @@ class StockStatus extends Command
      *
      * @param InputInterface $input
      * @param OutputInterface $output
-     *
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->_appState->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
+            try {
+                if (!$this->_appState->getAreaCode()) {
+                    $this->_appState->setAreaCode(\Magento\Framework\App\Area::AREA_ADMINHTML);
+                }
+            } catch (LocalizedException) {
+
+            }
+
             $output->writeln("<info>" . __('Start updateStockStatusFilterAttribute ') . "</info>");
-            $this->_stockHelper->updateStockStatusFilterAttribute();
+            $this->updateService->execute();
+
             return Cli::RETURN_SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->writeln('<error>' . $e->getMessage() . '</error>');
         }
         return Cli::RETURN_FAILURE;
