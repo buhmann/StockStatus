@@ -100,7 +100,11 @@ class Stock extends AbstractFilter
         $productCollection = $this->getLayer()->getProductCollection();
         $indexField = $this->configProvider->getIndexField();
 
-        $facetedData = $productCollection->getFacetedData($indexField);
+        try {
+            $facetedData = $productCollection->getFacetedData($indexField);
+        } catch (\Magento\Framework\Exception\StateException) {
+            return [];
+        }
 
         if (empty($facetedData)) {
             return [];

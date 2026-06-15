@@ -6,6 +6,7 @@ namespace Buhmann\StockStatus\Plugin\Framework\Search;
 
 use Magento\Framework\Search\Request\Config;
 use Magento\Framework\App\RequestInterface;
+use Buhmann\StockStatus\Api\StockStatusInterface;
 use Buhmann\StockStatus\ViewModel\ConfigProvider;
 
 /**
@@ -13,8 +14,23 @@ use Buhmann\StockStatus\ViewModel\ConfigProvider;
  */
 class RequestConfigPlugin
 {
+    /**
+     * @var RequestInterface
+     */
     private RequestInterface $request;
+
+    /**
+     * @var ConfigProvider
+     */
     private ConfigProvider $configProvider;
+
+    /**
+     * List of request names that should be modified
+     */
+    private const array SUPPORTED_REQUESTS = [
+        'catalog_view_container',  // Category page layered navigation
+        'quick_search_container'    // Search results page
+    ];
 
     /**
      * @param RequestInterface $request
@@ -39,8 +55,8 @@ class RequestConfigPlugin
      */
     public function afterGet(Config $subject, array $result, ?string $requestName = null): array
     {
-        // Only modify catalog_view_container request (category layered navigation)
-        if ($requestName !== 'catalog_view_container') {
+        // Only modify supported requests (category and search pages)
+        if (!in_array($requestName, self::SUPPORTED_REQUESTS)) {
             return $result;
         }
 
@@ -90,8 +106,8 @@ class RequestConfigPlugin
         }
 
         // Add stock_status query reference to the main boolQuery
-        if (isset($result['queries']['catalog_view_container']['queryReference'])) {
-            $queryReferences = $result['queries']['catalog_view_container']['queryReference'];
+        if (isset($result['queries'][$requestName]['queryReference'])) {
+            $queryReferences = $result['queries'][$requestName]['queryReference'];
             $hasStockStatus = false;
 
             foreach ($queryReferences as $ref) {
@@ -102,14 +118,14 @@ class RequestConfigPlugin
             }
 
             if (!$hasStockStatus) {
-                $result['queries']['catalog_view_container']['queryReference'][] = [
+                $result['queries'][$requestName]['queryReference'][] = [
                     'clause' => 'must',
                     'ref' => $indexField
                 ];
             }
         }
 
-        // Bind the stock_status parameter value to the search request if present in URL
+        // If stock_status parameter is present, add it to binds
         if ($stockStatus !== null) {
             if (!isset($result['binds'])) {
                 $result['binds'] = [];
