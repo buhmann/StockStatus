@@ -1,15 +1,26 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Copyright © Buhmann. All rights reserved.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <type name="Magento\Framework\Console\CommandList">
+    <type name="Magento\Catalog\Model\Layer\FilterList">
+        <plugin name="buhmann_stock_filter_plugin" type="Buhmann\StockStatus\Plugin\FilterList" sortOrder="10"/>
+    </type>
+
+    <type name="Magento\Framework\Search\Request\Config">
+        <plugin name="buhmann_stock_status_request_config" type="Buhmann\StockStatus\Plugin\Framework\Search\RequestConfigPlugin" sortOrder="10"/>
+    </type>
+
+    <type name="Magento\Elasticsearch\Model\Adapter\BatchDataMapper\ProductDataMapper">
+        <plugin name="buhmann_stock_status_product_mapper" type="Buhmann\StockStatus\Plugin\Catalog\ProductDataMapperPlugin"/>
+    </type>
+
+    <type name="Magento\OpenSearch\Model\Adapter\DynamicTemplatesProvider">
         <arguments>
-            <argument name="commands" xsi:type="array">
-                <item name="updateStockStatusFilterAttribute" xsi:type="object">Buhmann\StockStatus\Console\Command\StockStatus</item>
+            <argument name="mappers" xsi:type="array">
+                <item name="stock_status_mapper" xsi:type="object">Buhmann\StockStatus\Model\Adapter\DynamicTemplates\StockStatusMapper</item>
             </argument>
         </arguments>
     </type>
