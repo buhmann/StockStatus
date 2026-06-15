@@ -8,13 +8,13 @@
     <system>
         <section id="catalog">
             <group id="layered_navigation">
-                <field id="stock_status_enabled" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="stock_status_enabled" translate="label" type="select" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enable Stock Status Filter</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Adds stock status filter to layered navigation</comment>
                 </field>
 
-                <field id="stock_status_title" translate="label" type="text" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="stock_status_title" translate="label" type="text" sortOrder="141" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Filter Title</label>
                     <comment><![CDATA[Title displayed for stock status filter. Default: <strong>Stock Status</strong>]]></comment>
                     <validate>validate-no-html-tags</validate>
@@ -23,7 +23,7 @@
                     </depends>
                 </field>
 
-                <field id="stock_status_request_var" translate="label" type="text" sortOrder="42" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="stock_status_request_var" translate="label" type="text" sortOrder="142" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>URL Parameter Name</label>
                     <comment><![CDATA[URL parameter name for stock status filter. Default: <strong>stock_status</strong>]]></comment>
                     <validate>validate-no-html-tags</validate>
@@ -32,7 +32,7 @@
                     </depends>
                 </field>
 
-                <field id="stock_status_available" translate="label" type="multiselect" sortOrder="43" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="stock_status_available" translate="label" type="multiselect" sortOrder="143" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Available Stock Status Options</label>
                     <source_model>Buhmann\StockStatus\Model\Config\Source\StockStatusOptions</source_model>
                     <comment>Select which stock status options to display in filter</comment>
@@ -41,14 +41,14 @@
                     </depends>
                 </field>
 
-                <field id="stock_status_position" translate="label" type="select" sortOrder="44" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="stock_status_position" translate="label" type="select" sortOrder="144" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Filter Position</label>
                     <source_model>Buhmann\StockStatus\Model\Config\Source\PositionStrategy</source_model>
                     <depends>
                         <field id="stock_status_enabled">1</field>
                     </depends>
                 </field>
-                <field id="stock_status_position_attribute" translate="label" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="stock_status_position_attribute" translate="label" type="select" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Place After Attribute</label>
                     <source_model>Buhmann\StockStatus\Model\Config\Source\FilterableAttributes</source_model>
                     <depends>
@@ -56,7 +56,7 @@
                         <field id="stock_status_position">after</field>
                     </depends>
                 </field>
-                <field id="stock_status_position_custom" translate="label" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="stock_status_position_custom" translate="label" type="text" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sort Order</label>
                     <validate>validate-number</validate>
                     <depends>
@@ -65,7 +65,7 @@
                     </depends>
                 </field>
 
-                <field id="stock_status_separator" translate="label" type="label" sortOrder="49" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="stock_status_separator" translate="label" type="label" sortOrder="149" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label><![CDATA[<hr style="border: 0; border-top: 1px solid #dfdfdf; margin: 10px 0;" />]]></label>
                     <frontend_model>Magento\Config\Block\System\Config\Form\Field\Heading</frontend_model>
                     <depends>
