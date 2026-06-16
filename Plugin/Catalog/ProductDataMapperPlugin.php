@@ -6,7 +6,7 @@ namespace Buhmann\StockStatus\Plugin\Catalog;
 
 use Buhmann\StockStatus\ViewModel\ConfigProvider;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Elasticsearch\Model\Adapter\BatchDataMapper\ProductDataMapper;
+use Magento\Elasticsearch\Model\Adapter\BatchDataMapper\ProductDataMapper as Subject;
 
 /**
  * Plugin to add stock_status field to Elasticsearch/OpenSearch index data
@@ -31,7 +31,7 @@ class ProductDataMapperPlugin
     /**
      * Add stock_status field to index data for search engine metadata
      *
-     * @param ProductDataMapper $subject
+     * @param Subject $subject
      * @param array $documentData
      * @param int $storeId
      * @param array $context
@@ -39,7 +39,7 @@ class ProductDataMapperPlugin
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterMap(
-        ProductDataMapper $subject,
+        Subject $subject,
         array $documentData,
         $storeId = 0,
         $context = []

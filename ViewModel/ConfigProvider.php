@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Buhmann\StockStatus\ViewModel;
 
+use Buhmann\StockStatus\Api\IndexFieldMapperInterface;
 use Magento\CatalogInventory\Model\Configuration;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
@@ -16,7 +17,7 @@ use Buhmann\StockStatus\Api\StockStatusInterface;
  * ConfigProvider for Stock Status Filter
  * Provides configuration values for the stock status filter functionality
  */
-class ConfigProvider implements ArgumentInterface
+class ConfigProvider implements ArgumentInterface, IndexFieldMapperInterface
 {
     /**
      * @var ScopeConfigInterface

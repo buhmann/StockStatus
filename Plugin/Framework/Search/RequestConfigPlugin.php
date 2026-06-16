@@ -6,7 +6,6 @@ namespace Buhmann\StockStatus\Plugin\Framework\Search;
 
 use Magento\Framework\Search\Request\Config;
 use Magento\Framework\App\RequestInterface;
-use Buhmann\StockStatus\Api\StockStatusInterface;
 use Buhmann\StockStatus\ViewModel\ConfigProvider;
 
 /**

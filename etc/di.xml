@@ -5,6 +5,10 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Buhmann\StockStatus\Api\PositionProviderInterface" type="Buhmann\StockStatus\Model\Provider\PositionProvider"/>
+    <preference for="Buhmann\StockStatus\Api\FilterListApplierInterface" type="Buhmann\StockStatus\Model\FilterList\FilterListApplier"/>
+    <preference for="Buhmann\StockStatus\Api\IndexFieldMapperInterface" type="Buhmann\StockStatus\ViewModel\ConfigProvider"/>
+
     <type name="Magento\Catalog\Model\Layer\FilterList">
         <plugin name="buhmann_stock_filter_plugin" type="Buhmann\StockStatus\Plugin\FilterList" sortOrder="10"/>
     </type>
