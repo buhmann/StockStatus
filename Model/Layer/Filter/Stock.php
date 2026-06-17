@@ -9,6 +9,8 @@ use Buhmann\StockStatus\ViewModel\ConfigProvider;
 use Magento\Catalog\Model\Layer\Filter\AbstractFilter;
 use Magento\Catalog\Model\Layer\Filter\ItemFactory;
 use Magento\Catalog\Model\Layer\Resolver;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
+use Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
@@ -26,11 +28,17 @@ class Stock extends AbstractFilter
     protected ConfigProvider $configProvider;
 
     /**
+     * @var AttributeFactory
+     */
+    protected AttributeFactory $eavAttributeFactory;
+
+    /**
      * @param ItemFactory $filterItemFactory
      * @param StoreManagerInterface $storeManager
      * @param Resolver $layerResolver
      * @param DataBuilder $itemDataBuilder
      * @param ConfigProvider $configProvider
+     * @param AttributeFactory $eavAttributeFactory
      * @param array $data
      * @throws LocalizedException
      */
@@ -40,6 +48,7 @@ class Stock extends AbstractFilter
         Resolver $layerResolver,
         DataBuilder $itemDataBuilder,
         ConfigProvider $configProvider,
+        AttributeFactory $eavAttributeFactory,
         array $data = []
     ) {
         parent::__construct(
@@ -50,6 +59,7 @@ class Stock extends AbstractFilter
             $data
         );
         $this->configProvider = $configProvider;
+        $this->eavAttributeFactory = $eavAttributeFactory;
 
         $this->setRequestVar($this->configProvider->getRequestVar());
     }
@@ -150,16 +160,21 @@ class Stock extends AbstractFilter
     /**
      * Get attribute model associated with filter
      *
-     * @return DataObject
+     * @return Attribute
      */
-    public function getAttributeModel(): DataObject
+    public function getAttributeModel(): Attribute
     {
-        return new DataObject([
-            'store_label' => $this->configProvider->getFilterTitle(),
-            'attribute_code' => $this->configProvider->getIndexField(),
-            'frontend_input' => 'select',
-            'is_filterable' => 1
-        ]);
+        $attribute = $this->_getData('attribute_model');
+        if ($attribute === null) {
+            $attribute = $this->eavAttributeFactory->create();
+            $attribute->setId(0);
+            $attribute->setAttributeCode($this->configProvider->getIndexField());
+            $attribute->setFrontendLabel($this->configProvider->getFilterTitle());
+            $attribute->setIsFilterable(1);
+            $attribute->setIsVisibleOnFront(1);
+            $this->setData('attribute_model', $attribute);
+        }
+        return $attribute;
     }
 
     /**
