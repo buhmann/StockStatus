@@ -5,8 +5,10 @@
 
 namespace Buhmann\StockStatus\Model\Layer\Filter;
 
+use Buhmann\StockStatus\Api\ItemFactoryProviderInterface;
 use Buhmann\StockStatus\ViewModel\ConfigProvider;
 use Magento\Catalog\Model\Layer\Filter\AbstractFilter;
+use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
 use Magento\Catalog\Model\Layer\Filter\ItemFactory;
 use Magento\Catalog\Model\Layer\Resolver;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
@@ -33,12 +35,18 @@ class Stock extends AbstractFilter
     protected AttributeFactory $eavAttributeFactory;
 
     /**
+     * @var ItemFactoryProviderInterface
+     */
+    protected ItemFactoryProviderInterface $itemFactoryProvider;
+
+    /**
      * @param ItemFactory $filterItemFactory
      * @param StoreManagerInterface $storeManager
      * @param Resolver $layerResolver
      * @param DataBuilder $itemDataBuilder
      * @param ConfigProvider $configProvider
      * @param AttributeFactory $eavAttributeFactory
+     * @param ItemFactoryProviderInterface $itemFactoryProvider
      * @param array $data
      * @throws LocalizedException
      */
@@ -49,6 +57,7 @@ class Stock extends AbstractFilter
         DataBuilder $itemDataBuilder,
         ConfigProvider $configProvider,
         AttributeFactory $eavAttributeFactory,
+        ItemFactoryProviderInterface $itemFactoryProvider,
         array $data = []
     ) {
         parent::__construct(
@@ -60,6 +69,7 @@ class Stock extends AbstractFilter
         );
         $this->configProvider = $configProvider;
         $this->eavAttributeFactory = $eavAttributeFactory;
+        $this->itemFactoryProvider = $itemFactoryProvider;
 
         $this->setRequestVar($this->configProvider->getRequestVar());
     }
@@ -120,7 +130,7 @@ class Stock extends AbstractFilter
             return [];
         }
 
-        foreach ($this->getValues() as $status) {
+        foreach ($this->getAvailableStatuses() as $status) {
             $count = $facetedData[$status]['count'] ?? 0;
             if ($count > 0) {
                 $this->itemDataBuilder->addItemData(
@@ -138,7 +148,7 @@ class Stock extends AbstractFilter
      *
      * @return array
      */
-    public function getValues(): array
+    public function getAvailableStatuses(): array
     {
         return $this->configProvider->getEnabledStockStatuses();
     }
@@ -151,7 +161,7 @@ class Stock extends AbstractFilter
     public function getLabels(): array
     {
         $labels = [];
-        foreach ($this->getValues() as $status) {
+        foreach ($this->getAvailableStatuses() as $status) {
             $labels[$status] = __($this->configProvider->getStockStatusLabel($status));
         }
         return $labels;
@@ -170,8 +180,13 @@ class Stock extends AbstractFilter
             $attribute->setId(0);
             $attribute->setAttributeCode($this->configProvider->getIndexField());
             $attribute->setFrontendLabel($this->configProvider->getFilterTitle());
+            $attribute->setStoreLabel($this->configProvider->getFilterTitle());
             $attribute->setIsFilterable(1);
             $attribute->setIsVisibleOnFront(1);
+            $attribute->setFacetMaxSize(count($this->getItems()));
+            $attribute->setFrontendInput('select');
+            $attribute->setBackendType('int');
+
             $this->setData('attribute_model', $attribute);
         }
         return $attribute;
@@ -190,5 +205,18 @@ class Stock extends AbstractFilter
             return $labels[$optionId];
         }
         return '';
+    }
+
+    /**
+     * Create filter item
+     *
+     * @param string $label
+     * @param mixed $value
+     * @param int $count
+     * @return FilterItem
+     */
+    protected function _createItem($label, $value, $count = 0)
+    {
+        return $this->itemFactoryProvider->create($this, $label, $value, $count);
     }
 }
