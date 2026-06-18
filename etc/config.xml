@@ -9,7 +9,6 @@
         <catalog>
             <layered_navigation>
                 <stock_status_enabled>1</stock_status_enabled>
-                <stock_status_title>Stock Status</stock_status_title>
                 <stock_status_request_var>stock_status</stock_status_request_var>
                 <stock_status_available>1,0</stock_status_available>
                 <stock_status_position>last</stock_status_position>
