@@ -29,4 +29,16 @@
             </argument>
         </arguments>
     </type>
+
+    <virtualType name="StockStatusItemFactory" type="Magento\Catalog\Model\Layer\Filter\ItemFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Buhmann\StockStatus\Model\Layer\Filter\Item\Stock</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Buhmann\StockStatus\Model\Provider\ItemFactoryProvider">
+        <arguments>
+            <argument name="itemFactory" xsi:type="object">StockStatusItemFactory</argument>
+        </arguments>
+    </type>
 </config>
