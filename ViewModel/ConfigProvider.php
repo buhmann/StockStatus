@@ -207,4 +207,29 @@ class ConfigProvider implements ArgumentInterface, IndexFieldMapperInterface
 
         return $config;
     }
+
+    /**
+     * Get filter mode (single or multi select)
+     *
+     * @return int
+     */
+    public function getFilterMode(): int
+    {
+        $mode = (int) $this->scopeConfig->getValue(
+            StockStatusInterface::CONFIG_MULTISELECT_PATH,
+            ScopeInterface::SCOPE_STORE
+        );
+
+        return $mode ?: StockStatusInterface::FILTER_MODE_SINGLE;
+    }
+
+    /**
+     * Returns true if Multiple Select have to be enabled.
+     *
+     * @return boolean
+     */
+    public function isMultiSelectEnabled(): bool
+    {
+        return $this->getFilterMode() == StockStatusInterface::FILTER_MODE_MULTI;
+    }
 }

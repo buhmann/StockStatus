@@ -25,6 +25,7 @@ interface StockStatusInterface
     public const string CONFIG_ENABLED_PATH = 'catalog/layered_navigation/stock_status_enabled';
     public const string CONFIG_TITLE_PATH = 'catalog/layered_navigation/stock_status_title';
     public const string CONFIG_AVAILABLE_STATES_PATH = 'catalog/layered_navigation/stock_status_available';
+    public const string CONFIG_MULTISELECT_PATH = 'catalog/layered_navigation/stock_status_multiselect';
     public const string CONFIG_REQUEST_VAR_PATH = 'catalog/layered_navigation/stock_status_request_var';
     public const string CONFIG_POSITION_STRATEGY_PATH = 'catalog/layered_navigation/stock_status_position';
     public const string CONFIG_POSITION_ATTRIBUTE_PATH = 'catalog/layered_navigation/stock_status_position_attribute';
@@ -37,6 +38,12 @@ interface StockStatusInterface
     public const string POSITION_LAST = 'last';
     public const string POSITION_AFTER = 'after';
     public const string POSITION_CUSTOM = 'custom';
+
+    /**
+     * Filter mode values
+     */
+    public const int FILTER_MODE_SINGLE = 1;
+    public const int FILTER_MODE_MULTI = 2;
 
     /**
      * Stock status values

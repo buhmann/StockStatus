@@ -41,14 +41,23 @@
                     </depends>
                 </field>
 
-                <field id="stock_status_position" translate="label" type="select" sortOrder="144" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="stock_status_multiselect" translate="label" type="select" sortOrder="144" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Filter Mode</label>
+                    <source_model>Buhmann\StockStatus\Model\Config\Source\FilterMode</source_model>
+                    <comment>Select filter behavior: single select (radio) or multi select (checkbox)</comment>
+                    <depends>
+                        <field id="stock_status_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="stock_status_position" translate="label" type="select" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Filter Position</label>
                     <source_model>Buhmann\StockStatus\Model\Config\Source\PositionStrategy</source_model>
                     <depends>
                         <field id="stock_status_enabled">1</field>
                     </depends>
                 </field>
-                <field id="stock_status_position_attribute" translate="label" type="select" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="stock_status_position_attribute" translate="label" type="select" sortOrder="146" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Place After Attribute</label>
                     <source_model>Buhmann\StockStatus\Model\Config\Source\FilterableAttributes</source_model>
                     <depends>
@@ -56,7 +65,7 @@
                         <field id="stock_status_position">after</field>
                     </depends>
                 </field>
-                <field id="stock_status_position_custom" translate="label" type="text" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="stock_status_position_custom" translate="label" type="text" sortOrder="146" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sort Order</label>
                     <validate>validate-number</validate>
                     <depends>

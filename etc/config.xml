@@ -11,6 +11,7 @@
                 <stock_status_enabled>1</stock_status_enabled>
                 <stock_status_request_var>stock_status</stock_status_request_var>
                 <stock_status_available>1,0</stock_status_available>
+                <stock_status_multiselect>2</stock_status_multiselect>
                 <stock_status_position>last</stock_status_position>
             </layered_navigation>
         </catalog>

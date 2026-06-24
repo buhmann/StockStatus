@@ -15,3 +15,7 @@
 "Filter Position","Filter Position"
 "Place After Attribute","Place After Attribute"
 "Sort Order","Sort Order"
+"Filter Mode","Filter Mode"
+"Single select (radio)","Single select (radio)"
+"Multi select (checkbox)","Multi select (checkbox)"
+"Select filter behavior: single select (radio) or multi select (checkbox)","Select filter behavior: single select (radio) or multi select (checkbox)"
