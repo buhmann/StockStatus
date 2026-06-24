@@ -18,6 +18,8 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class Stock extends Item
 {
+    use UrlTrait;
+
     /**
      * Get URL for filter item
      *
@@ -32,28 +34,15 @@ class Stock extends Item
         /** @var \Buhmann\StockStatus\Model\Layer\Filter\Stock $filter */
         $filter = $this->getFilter();
 
-        // Single-select mode — use default behavior
         if (!$filter->isMultiSelectEnabled()) {
             return parent::getUrl();
         }
 
-        // Multi-select mode — toggle logic
-        $requestVar = $filter->getRequestVar();
-        $currentValue = (int)$this->getValue();
-        $values = $filter->getSelectedValues() ?? [];
-
-        if (in_array($currentValue, $values)) {
-            $values = array_diff($values, [$currentValue]);
-        } else {
-            $values[] = $currentValue;
-        }
-
-        $query = [
-            $requestVar => !empty($values) ? implode(',', $values) : null,
-            $this->_htmlPagerBlock->getPageVarName() => null,
-        ];
-
-        return $this->_url->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true, '_query' => $query]);
+        return $this->buildMultiSelectUrl(
+            $filter->getRequestVar(),
+            (int)$this->getValue(),
+            $filter->getSelectedValues() ?? []
+        );
     }
 
     /**
@@ -69,24 +58,14 @@ class Stock extends Item
         /** @var \Buhmann\StockStatus\Model\Layer\Filter\Stock $filter */
         $filter = $this->getFilter();
 
-        // Single-select mode — use default behavior
         if (!$filter->isMultiSelectEnabled()) {
             return parent::getRemoveUrl();
         }
 
-        // Multi-select mode — remove current value
-        $requestVar = $filter->getRequestVar();
-        $currentValue = (int)$this->getValue();
-        $values = $filter->getSelectedValues() ?? [];
-
-        // Remove current value from selected values
-        $values = array_diff($values, [$currentValue]);
-
-        $query = [
-            $requestVar => !empty($values) ? implode(',', $values) : null,
-            $this->_htmlPagerBlock->getPageVarName() => null,
-        ];
-
-        return $this->_url->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true, '_query' => $query, '_escape' => true]);
+        return $this->buildMultiSelectRemoveUrl(
+            $filter->getRequestVar(),
+            (int)$this->getValue(),
+            $filter->getSelectedValues() ?? []
+        );
     }
 }
