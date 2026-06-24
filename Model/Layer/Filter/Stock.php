@@ -2,10 +2,10 @@
 /**
  * Copyright © Buhmann. All rights reserved.
  */
-
 namespace Buhmann\StockStatus\Model\Layer\Filter;
 
 use Buhmann\StockStatus\Api\ItemFactoryProviderInterface;
+use Buhmann\StockStatus\Model\Layer\Filter\DataProvider\Stock as StockDataProvider;
 use Buhmann\StockStatus\ViewModel\ConfigProvider;
 use Magento\Catalog\Model\Layer\Filter\AbstractFilter;
 use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
@@ -14,8 +14,8 @@ use Magento\Catalog\Model\Layer\Resolver;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
 use Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\StateException;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Catalog\Model\Layer\Filter\Item\DataBuilder;
 
@@ -40,6 +40,11 @@ class Stock extends AbstractFilter
     protected ItemFactoryProviderInterface $itemFactoryProvider;
 
     /**
+     * @var StockDataProvider
+     */
+    protected StockDataProvider $dataProvider;
+
+    /**
      * @param ItemFactory $filterItemFactory
      * @param StoreManagerInterface $storeManager
      * @param Resolver $layerResolver
@@ -47,6 +52,7 @@ class Stock extends AbstractFilter
      * @param ConfigProvider $configProvider
      * @param AttributeFactory $eavAttributeFactory
      * @param ItemFactoryProviderInterface $itemFactoryProvider
+     * @param StockDataProvider $dataProvider
      * @param array $data
      * @throws LocalizedException
      */
@@ -58,6 +64,7 @@ class Stock extends AbstractFilter
         ConfigProvider $configProvider,
         AttributeFactory $eavAttributeFactory,
         ItemFactoryProviderInterface $itemFactoryProvider,
+        StockDataProvider $dataProvider,
         array $data = []
     ) {
         parent::__construct(
@@ -70,6 +77,7 @@ class Stock extends AbstractFilter
         $this->configProvider = $configProvider;
         $this->eavAttributeFactory = $eavAttributeFactory;
         $this->itemFactoryProvider = $itemFactoryProvider;
+        $this->dataProvider = $dataProvider;
 
         $this->setRequestVar($this->configProvider->getRequestVar());
     }
@@ -88,19 +96,38 @@ class Stock extends AbstractFilter
             return $this;
         }
 
-        $value = $request->getParam($this->getRequestVar());
-        if ($value === null) {
+        $rawValue = $request->getParam($this->getRequestVar());
+
+        if ($rawValue === null) {
+            return $this;
+        }
+
+        if (is_array($rawValue)) {
+            $values = $rawValue;
+        } else {
+            $values = explode(',', (string)$rawValue);
+        }
+
+        $values = array_map('intval', array_filter($values, function ($v) {
+            return $v !== '';
+        }));
+
+        if (empty($values)) {
             return $this;
         }
 
         $collection = $this->getLayer()->getProductCollection();
         $indexField = $this->configProvider->getIndexField();
 
-        $collection->addFieldToFilter($indexField, (int)$value);
+        $this->dataProvider->collectTotalCounts();
 
-        $this->getLayer()->getState()->addFilter(
-            $this->_createItem($this->getOptionText($value), $value)
-        );
+        $collection->addFieldToFilter($indexField, $values);
+
+        foreach ($values as $value) {
+            $this->getLayer()->getState()->addFilter(
+                $this->_createItem($this->getOptionText($value), $value)
+            );
+        }
 
         return $this;
     }
@@ -122,17 +149,27 @@ class Stock extends AbstractFilter
 
         try {
             $facetedData = $productCollection->getFacetedData($indexField);
-        } catch (\Magento\Framework\Exception\StateException) {
-            return [];
+        } catch (StateException) {
+            $facetedData = [];
         }
 
-        if (empty($facetedData)) {
-            return [];
+        $totalCounts = [];
+        if ($this->isMultiSelectEnabled()) {
+            $totalCounts = $this->dataProvider->getTotalCounts();
         }
 
         foreach ($this->getAvailableStatuses() as $status) {
-            $count = $facetedData[$status]['count'] ?? 0;
-            if ($count > 0) {
+            $isSelected = in_array($status, $this->getSelectedValues());
+
+            if (!empty($totalCounts)) {
+                $count = $isSelected
+                    ? ($facetedData[$status]['count'] ?? 0)
+                    : ($totalCounts[$status] ?? 0);
+            } else {
+                $count = $facetedData[$status]['count'] ?? 0;
+            }
+
+            if ($this->isMultiSelectEnabled() || $count > 0) {
                 $this->itemDataBuilder->addItemData(
                     $this->getOptionText($status),
                     $status,
@@ -141,6 +178,16 @@ class Stock extends AbstractFilter
             }
         }
         return $this->itemDataBuilder->build();
+    }
+
+    /**
+     * Check if multi-select mode is enabled
+     *
+     * @return bool
+     */
+    public function isMultiSelectEnabled(): bool
+    {
+        return $this->configProvider->isMultiSelectEnabled();
     }
 
     /**
@@ -190,6 +237,28 @@ class Stock extends AbstractFilter
             $this->setData('attribute_model', $attribute);
         }
         return $attribute;
+    }
+
+    /**
+     * Get selected values from state
+     *
+     * @return array
+     * @throws LocalizedException
+     */
+    public function getSelectedValues(): array
+    {
+        $selected = [];
+        foreach ($this->getLayer()->getState()->getFilters() as $filter) {
+            if ($filter->getFilter()->getRequestVar() === $this->getRequestVar()) {
+                $value = $filter->getValue();
+                if (is_array($value)) {
+                    $selected = array_merge($selected, $value);
+                } else {
+                    $selected[] = $value;
+                }
+            }
+        }
+        return array_unique($selected);
     }
 
     /**
