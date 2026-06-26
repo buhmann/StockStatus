@@ -18,7 +18,7 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class Stock extends Item
 {
-    use UrlTrait;
+    use StockTrait;
 
     /**
      * Get URL for filter item

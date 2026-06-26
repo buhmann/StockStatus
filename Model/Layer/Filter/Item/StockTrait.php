@@ -10,12 +10,40 @@ namespace Buhmann\StockStatus\Model\Layer\Filter\Item;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
- * Trait for multi-select URL building
+ * Trait for stock status filter item
  *
- * Provides toggle logic for filter items in multi-select mode
+ * Provides shared logic for:
+ * - Multi-select URL building with comma-separated values
+ * - Selection state checking
+ * - Toggle logic for adding/removing filter values
  */
-trait UrlTrait
+trait StockTrait
 {
+    /**
+     * Check if the current item is selected
+     *
+     * @return bool
+     * @throws LocalizedException
+     */
+    public function getIsSelected(): bool
+    {
+        $filter = $this->getFilter();
+        $selectedValues = [];
+
+        foreach ($filter->getLayer()->getState()->getFilters() as $stateFilter) {
+            if ($stateFilter->getFilter()->getRequestVar() === $filter->getRequestVar()) {
+                $value = $stateFilter->getValue();
+                if (is_array($value)) {
+                    $selectedValues = array_merge($selectedValues, $value);
+                } else {
+                    $selectedValues[] = (int)$value;
+                }
+            }
+        }
+
+        return in_array((int)$this->getValue(), $selectedValues, true);
+    }
+
     /**
      * Build URL for multi-select filter item
      *
