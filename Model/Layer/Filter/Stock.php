@@ -233,6 +233,7 @@ class Stock extends AbstractFilter
             $attribute->setFacetMaxSize(count($this->getItems()));
             $attribute->setFrontendInput('select');
             $attribute->setBackendType('int');
+            $attribute->setSourceModel('Buhmann\StockStatus\Model\Layer\Filter\Source\Stock');
 
             $this->setData('attribute_model', $attribute);
         }

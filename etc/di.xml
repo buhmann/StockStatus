@@ -41,4 +41,10 @@
             <argument name="itemFactory" xsi:type="object">StockStatusItemFactory</argument>
         </arguments>
     </type>
+
+    <type name="Buhmann\StockStatus\Model\Layer\Filter\Source\Stock">
+        <arguments>
+            <argument name="configProvider" xsi:type="object">Buhmann\StockStatus\ViewModel\ConfigProvider</argument>
+        </arguments>
+    </type>
 </config>
